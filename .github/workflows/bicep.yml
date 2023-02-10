@@ -39,7 +39,7 @@ jobs:
           inlineScript: |
             az bicep build --file ./bicep/storage.bicep --outdir $GITHUB_WORKSPACE && az ts create \
             --name storage \
-            --version $(date "+%Y.%m.%d.%h.%m") \
+            --version $(date "+%Y.%m.%d.%H.%M") \
             --resource-group $RESOURCEGROUPNAME \
             --location $LOCATION \
             --template-file $GITHUB_WORKSPACE/storage.json

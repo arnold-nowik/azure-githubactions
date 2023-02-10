@@ -19,22 +19,42 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    environment: bicep
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - run: | 
-          curl -Lo bicepinstall https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
-          chmod +x ./bicepinstall
-          sudo mv ./bicepinstall /usr/local/bin/bicep
-          bicep --help
-      
-      - run:    bicep build ./bicep/storage.bicep
-      
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
+      - name: Login via Az module
+        uses: azure/login@v1
         with:
-          path: ./template.json
+          creds: ${{secrets.AZURE_CREDENTIALS}}
+          enable-AzPSSession: true 
 
+      - name: Azure CLI script
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.30.0
+          inlineScript: |
+            az bicep build --file ./bicep/storage.bicep --outdir ./storage.json
+
+      - name: Check if Resource group exists
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            if (!(Get-AzResourceGroup "$Env:RESOURCEGROUPNAME" -ErrorAction SilentlyContinue)){
+                New-AzResourceGroup -Name "$Env:RESOURCEGROUPNAME" -Location "$Env:LOCATION"
+            }else{
+                Write-Output "The resource group already exists"
+            }
+          azPSVersion: "latest"
+
+      - name: Upload ARM template to Template Specs
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            $date = Get-Date -Format "yyyy.MM.dd" && New-AzTemplateSpec -Name storage -Version "$date" -ResourceGroupName "$Env:RESOURCEGROUPNAME" -Location "$Env:LOCATION" -TemplateFile ./storage.json
+          azPSVersion: "latest"
+
+          

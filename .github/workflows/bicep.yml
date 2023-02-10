@@ -25,7 +25,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - run: mkdir -p $GITHUB_WORKSPACE
 
       - name: Login via Az module
         uses: azure/login@v1
@@ -33,7 +32,7 @@ jobs:
           creds: ${{secrets.AZURE_CREDENTIALS}}
           enable-AzPSSession: true 
 
-      - name: Azure CLI script
+      - name: Convert Bicep to ARM Template
         uses: azure/CLI@v1
         with:
           azcliversion: 2.30.0
@@ -44,8 +43,8 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
-            if (!(Get-AzResourceGroup "$Env:RESOURCEGROUPNAME" -ErrorAction SilentlyContinue)){
-                New-AzResourceGroup -Name "$Env:RESOURCEGROUPNAME" -Location "$Env:LOCATION"
+            if (!(Get-AzResourceGroup "$RESOURCEGROUPNAME" -ErrorAction SilentlyContinue)){
+                New-AzResourceGroup -Name "$RESOURCEGROUPNAME" -Location "$LOCATION"
             }else{
                 Write-Output "The resource group already exists"
             }
@@ -55,7 +54,7 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
-            $date = Get-Date -Format "yyyy.MM.dd" && New-AzTemplateSpec -Name storage -Version "$date" -ResourceGroupName "$Env:RESOURCEGROUPNAME" -Location "$Env:LOCATION" -TemplateFile "$GITHUB_WORKSPACE/storage.json"
+            $date = Get-Date -Format "yyyy.MM.dd.hh.mm" && New-AzTemplateSpec -Name storage -Version "$date" -ResourceGroupName "$RESOURCEGROUPNAME" -Location "$LOCATION" -TemplateFile "$GITHUB_WORKSPACE/storage.json"
           azPSVersion: "latest"
 
           

@@ -32,29 +32,14 @@ jobs:
           creds: ${{secrets.AZURE_CREDENTIALS}}
           enable-AzPSSession: true 
 
-      - name: Convert Bicep to ARM Template
+      - name: Convert Bicep to ARM Template and upload to Template Specs
         uses: azure/CLI@v1
         with:
           azcliversion: 2.30.0
           inlineScript: |
-            az bicep build --file ./bicep/storage.bicep --outdir $GITHUB_WORKSPACE
-
-      - name: Check if Resource group exists
-        uses: azure/powershell@v1
-        with:
-          inlineScript: |
-            if (!(Get-AzResourceGroup "$RESOURCEGROUPNAME" -ErrorAction SilentlyContinue)){
-                New-AzResourceGroup -Name "$RESOURCEGROUPNAME" -Location "$LOCATION"
-            }else{
-                Write-Output "The resource group already exists"
-            }
-          azPSVersion: "latest"
-
-      - name: Upload ARM template to Template Specs
-        uses: azure/powershell@v1
-        with:
-          inlineScript: |
-            $date = Get-Date -Format "yyyy.MM.dd.hh.mm" && New-AzTemplateSpec -Name storage -Version "$date" -ResourceGroupName "$RESOURCEGROUPNAME" -Location "$LOCATION" -TemplateFile "$GITHUB_WORKSPACE/storage.json"
-          azPSVersion: "latest"
-
-          
+            az bicep build --file ./bicep/storage.bicep --outdir $GITHUB_WORKSPACE && az ts create \
+            --name storage \
+            --version $(date "+%Y.%m.%d.%h.%m") \
+            --resource-group $RESOURCEGROUPNAME \
+            --location $LOCATION \
+            --template-file $GITHUB_WORKSPACE/storage.json

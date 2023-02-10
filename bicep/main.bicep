@@ -1,4 +1,4 @@
-targetScope = 'resourceGroup'
+targetScope = 'subscription'
 
 module storageRg './resource-group.bicep' = {
   name: 'myStorageResourceGroupDeployment'

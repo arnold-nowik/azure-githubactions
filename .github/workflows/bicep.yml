@@ -25,6 +25,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      - run: mkdir -p $GITHUB_WORKSPACE
 
       - name: Login via Az module
         uses: azure/login@v1
@@ -37,7 +38,7 @@ jobs:
         with:
           azcliversion: 2.30.0
           inlineScript: |
-            az bicep build --file ./bicep/storage.bicep --outdir $GITHUB_WORKSPACE/storage.json
+            az bicep build --file ./bicep/storage.bicep --outdir $GITHUB_WORKSPACE
 
       - name: Check if Resource group exists
         uses: azure/powershell@v1

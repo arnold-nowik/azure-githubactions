@@ -37,7 +37,7 @@ jobs:
         with:
           azcliversion: 2.30.0
           inlineScript: |
-            az bicep build --file ./bicep/storage.bicep --outdir ./storage.json
+            az bicep build --file ./bicep/storage.bicep --outdir $GITHUB_WORKSPACE/storage.json
 
       - name: Check if Resource group exists
         uses: azure/powershell@v1
@@ -54,7 +54,7 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
-            $date = Get-Date -Format "yyyy.MM.dd" && New-AzTemplateSpec -Name storage -Version "$date" -ResourceGroupName "$Env:RESOURCEGROUPNAME" -Location "$Env:LOCATION" -TemplateFile ./storage.json
+            $date = Get-Date -Format "yyyy.MM.dd" && New-AzTemplateSpec -Name storage -Version "$date" -ResourceGroupName "$Env:RESOURCEGROUPNAME" -Location "$Env:LOCATION" -TemplateFile "$GITHUB_WORKSPACE/storage.json"
           azPSVersion: "latest"
 
           

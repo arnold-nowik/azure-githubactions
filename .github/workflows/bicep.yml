@@ -38,8 +38,8 @@ jobs:
           azcliversion: 2.30.0
           inlineScript: |
             az bicep build --file ./bicep/main.bicep --outdir $GITHUB_WORKSPACE && az ts create \
-              --name rgStorage \
+              --name ${{ vars.NAME }} \
               --version $(date "+%Y%m%d.%H%M") \
-              --resource-group ${{ vars.RESOURCEGROUPNAME }} \
+              --resource-group ${{ vars.RESOURCEGROUP }} \
               --location ${{ vars.LOCATION }} \
               --template-file $GITHUB_WORKSPACE/main.json
